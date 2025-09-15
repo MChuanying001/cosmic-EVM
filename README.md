@@ -29,58 +29,163 @@
 - 无需额外依赖包
 
 ## 快速开始
-
-### 1. 基础文本编码
+以太坊地址转换
 
 ```python
 from cosmic_language import CosmicLanguageCodec
+import re
 
-# 创建编解码器实例
-codec = CosmicLanguageCodec()
-
-# 编码文本
-text = "Hello 世界!"
-encoded = codec.encode_text(text)
-print(f"原文: {text}")
-print(f"宇宙语: {encoded}")
-
-# 解码文本
-decoded = codec.decode_text(encoded)
-print(f"解码结果: {decoded}")
-```
-
-### 2. 以太坊地址转换
-
-```python
-from ethereum_cosmic import EthereumCosmicConverter
-
-# 创建以太坊转换器实例
-converter = EthereumCosmicConverter()
-
-# 转换以太坊地址
-address = "0xab5801a7d398351b8be11c439e05c5b3259aec9b"
-result = converter.address_to_cosmic(address)
-
-if 'error' not in result:
-    print(f"原始地址: {result['original_address']}")
-    print(f"宇宙语编码: {result['cosmic_encoding']}")
+class EthereumCosmicConverter:
+    """
+    以太坊EVM地址转宇宙语转换器
+    支持将EVM地址转换为宇宙语编码
+    """
     
-    # 验证解码
-    decode_result = converter.cosmic_to_address(result['cosmic_encoding'])
-    if decode_result['is_valid']:
-        print("✓ 解码验证成功")
-else:
-    print(f"错误: {result['error']}")
-```
+    def __init__(self):
+        self.codec = CosmicLanguageCodec()
+    
+    def is_valid_ethereum_address(self, address):
+        """
+        验证EVM地址格式
+        """
+        # 检查是否以0x开头且长度为42字符
+        if not address.startswith('0x') or len(address) != 42:
+            return False
+        
+        # 检查是否只包含有效的十六进制字符
+        hex_part = address[2:]
+        return re.match(r'^[0-9a-fA-F]{40}$', hex_part) is not None
+    
+    def normalize_address(self, address):
+        """
+        标准化EVM地址（转为小写）
+        """
+        if not self.is_valid_ethereum_address(address):
+            raise ValueError(f"无效的EVM地址: {address}")
+        
+        return address.lower()
+    
+    def address_to_cosmic(self, address):
+        """
+        将EVM地址转换为宇宙语
+        """
+        try:
+            # 验证并标准化地址
+            normalized_address = self.normalize_address(address)
+            
+            # 使用宇宙语编码器编码地址
+            cosmic_encoded = self.codec.encode_text(normalized_address)
+            
+            return {
+                'original_address': address,
+                'normalized_address': normalized_address,
+                'cosmic_encoding': cosmic_encoded,
+                'encoding_length': len(cosmic_encoded)
+            }
+        
+        except Exception as e:
+            return {
+                'error': str(e),
+                'original_address': address
+            }
+    
+    def cosmic_to_address(self, cosmic_text):
+        """
+        将宇宙语解码为EVM地址
+        """
+        try:
+            # 解码宇宙语
+            decoded_text = self.codec.decode_text(cosmic_text)
+            
+            # 验证解码结果是否为有效的EVM地址
+            if self.is_valid_ethereum_address(decoded_text):
+                return {
+                    'cosmic_text': cosmic_text,
+                    'decoded_address': decoded_text,
+                    'is_valid': True
+                }
+            else:
+                return {
+                    'cosmic_text': cosmic_text,
+                    'decoded_text': decoded_text,
+                    'is_valid': False,
+                    'error': '解码结果不是有效的EVM地址'
+                }
+        
+        except Exception as e:
+            return {
+                'cosmic_text': cosmic_text,
+                'error': str(e),
+                'is_valid': False
+            }
+    
+    def batch_convert_addresses(self, addresses):
+        """
+        批量转换EVM地址为宇宙语
+        """
+        results = []
+        for address in addresses:
+            result = self.address_to_cosmic(address)
+            results.append(result)
+        return results
+    
+    def get_address_analysis(self, address):
+        """
+        分析EVM地址的字符组成
+        """
+        try:
+            normalized_address = self.normalize_address(address)
+            analysis = self.codec.analyze_text(normalized_address)
+            
+            return {
+                'address': normalized_address,
+                'character_analysis': analysis,
+                'total_characters': len(normalized_address)
+            }
+        
+        except Exception as e:
+            return {
+                'address': address,
+                'error': str(e)
+            }
 
-### 3. 运行示例程序
-
-```bash
-# 运行基础示例
-python cosmic.py
-
-# 运行以太坊地址示例
-python ethereum_cosmic.py
+# 示例使用
+if __name__ == "__main__":
+    converter = EthereumCosmicConverter()
+    print('EVM地址转宇宙语')
+    print('版本号v1.0')
+    # 测试地址
+    test_addresses = [
+        "0xab5801a7d398351b8be11c439e05c5b3259aec9b"#, #填入要转换的EVM地址
+        #"0x0xab5801a7d398351b8be11c439e05c5b3259aec9b"
+    ]
+    
+    print("=== EVM地址转宇宙语示例 ===")
+    
+    for address in test_addresses:
+        print(f"\n原始地址: {address}")
+        result = converter.address_to_cosmic(address)
+        
+        if 'error' in result:
+            print(f"错误: {result['error']}")
+        else:
+            print(f"标准化地址: {result['normalized_address']}")
+            print(f"宇宙语编码: {result['cosmic_encoding']}")
+            print(f"编码长度: {result['encoding_length']} 字符")
+            
+            # 验证解码
+            decode_result = converter.cosmic_to_address(result['cosmic_encoding'])
+            if decode_result['is_valid']:
+                print(f"解码验证: ✓ 成功")
+            else:
+                print(f"解码验证: ✗ 失败 - {decode_result.get('error', '未知错误')}")
+    
+    print("\n=== 地址字符分析示例 ===")
+    analysis = converter.get_address_analysis(test_addresses[0])
+    if 'error' not in analysis:
+        print(f"地址: {analysis['address']}")
+        print(f"总字符数: {analysis['total_characters']}")
+        print(f"字符类型分析: {analysis['character_analysis']}")
 ```
 
 ## 宇宙语字符映射
