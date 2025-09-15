@@ -1,6 +1,7 @@
 # 宇宙语编码器 - 以太坊EVM地址版
 
 根据[宇宙语主程序](https://github.com/0x3fffff/cosmic-language)改编而来
+主程序作者：0x3fffff
 
 一个支持将文本和以太坊EVM地址转换为宇宙语（块字符）编码的Python工具库。
 
@@ -264,3 +265,15 @@ if __name__ == "__main__":
 - 以太坊地址格式验证
 - 解码时的校验失败处理
 - 详细的错误信息返回
+
+## ⭐️ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=MChuanying001/cosmic-EVM&type=Date)](https://www.star-history.com/#MChuanying001/cosmic-EVM&Date)
+
+---
+
+**如果你觉得这个项目有趣，请给它一个 ⭐️！**
+
+---
+
+*我们一起将宇宙语发扬光大，让Ai可以真正翻译方块字符！* 🚀✨
