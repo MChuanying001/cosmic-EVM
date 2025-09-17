@@ -1,6 +1,7 @@
 # 宇宙语编码器 - 以太坊EVM地址版
 
 根据[宇宙语主程序](https://github.com/0x3fffff/cosmic-language)改编而来
+
 主程序作者：0x3fffff
 
 一个支持将文本和以太坊EVM地址转换为宇宙语（块字符）编码的Python工具库。
